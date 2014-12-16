@@ -1,0 +1,8 @@
+=sys-kernel/gentoo-sources-3.10.9 ~amd64
+media-sound/deadbeef ~amd64
+dev-libs/libindicator ~amd64
+www-client/google-chrome ~amd64
+x11-plugins/mrim-prpl ~amd64
+net-im/skype ~amd64
+kde-misc/kfilebox ~amd64
+=media-sound/picard-1.2 ~amd64

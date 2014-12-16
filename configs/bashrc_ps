@@ -1,0 +1,114 @@
+# .bashrc PS addon
+
+
+function get_git_changes {
+  local tmp="$(git status -s 2>/dev/null | grep -v "??")"
+ # local changes=$([[ -n "${tmp}" ]] && echo +)
+  [[ -n "${tmp}" ]] && echo +
+}
+
+function get_git_flags {
+  git rev-parse --git-dir &>/dev/null || return
+  local filename=.____GIT__STATUS__S__FILE____
+  git status --porcelain | fgrep -v $filename > $filename
+  if [[ -s ${filename} ]]; then
+    echo -n '('
+  fi
+}
+
+function clean_get_git_flags {
+  git rev-parse --git-dir &>/dev/null || return
+  local filename=.____GIT__STATUS__S__FILE____
+  if [[ -s ${filename} ]]; then
+    echo -n ')'
+  fi
+  rm -fr "${filename}" 2>/dev/null
+}
+
+
+function get_git_workt_flags {
+  git rev-parse --git-dir &>/dev/null || return
+  local filename=.____GIT__STATUS__S__FILE____
+  local workt=""
+
+  grep -q "^.M" $filename && workt+="M"
+  grep -q "^.A" $filename && workt+="A"
+  grep -q "^.D" $filename && workt+="D"
+  grep -q "^.R" $filename && workt+="R"
+  grep -q "^.C" $filename && workt+="C"
+  grep -q "^.U" $filename && workt+="U"
+
+
+  grep -q "^?" $filename && workt+="?"
+  grep -q "^!" $filename && workt+="!"
+
+
+  if [[ -z "${workt}" ]]; then
+    return
+  fi
+
+  echo -n "${workt}"
+
+}
+
+
+function get_git_stage_flags {
+  git rev-parse --git-dir &>/dev/null || return
+  local filename=.____GIT__STATUS__S__FILE____
+  local stage=""
+
+  #MARDCU?!
+
+  grep -q "^M" $filename && stage+="M"
+  grep -q "^A" $filename && stage+="A"
+  grep -q "^D" $filename && stage+="D"
+  grep -q "^R" $filename && stage+="R"
+  grep -q "^C" $filename && stage+="C"
+  grep -q "^U" $filename && stage+="U"
+
+
+  if [[ -z "${stage}" ]]; then
+    return
+  fi
+
+  echo -n "${stage}"
+
+}
+
+function get_git_branch {
+  # check if there is an git repo
+  git rev-parse --git-dir &>/dev/null || return
+
+  # get name
+  local name=
+  name=$(git branch 2>/dev/null | fgrep '*')
+  name=${name:2} ## star cut
+  echo -n " ${name}"
+}
+
+
+## ecode
+export PS1="\$(export ecode=\$? ; if [[ \$ecode == 0 ]]; then echo -n '\[\e[01;34m\]'; else echo -n '\[\e[01;31m\]'; fi; echo -n \(\$ecode\) \[\e[0m\])"
+
+## basic prompt username hostname
+if [[ $EUID -eq 0 ]]; then
+  PS1+="\[\033[01;31m\]\u@\h"
+else
+  PS1+="\[\033[01;34m\]\u@\h"
+fi
+
+PS1+="\[\033[01;34m\] \w"
+
+## git branch
+PS1+="\[\033[00;37m\]\$(get_git_branch)"
+
+## git status flags
+PS1+="\$(get_git_flags)"
+PS1+="\[\e[01;34m\]\$(get_git_stage_flags)"
+PS1+="\[\e[01;31m\]\$(get_git_workt_flags)"
+PS1+="\[\e[0m\]\$(clean_get_git_flags)\$(get_git_changes)"
+       
+## tail of prompt, the $ sign
+PS1+=" \[\033[01;34m\]\$\[\033[00m\] "
+## current time
+PS1+="\$(date +%H:%M:%S) "

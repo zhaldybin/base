@@ -1,0 +1,5 @@
+# required by google-chrome (argument)
+www-client/google-chrome google-chrome
+# required by net-im/skype4pidgin-9999::flora
+# required by net-im/skype4pidgin (argument)
+net-im/skype skype-4.0.0.7-copyright

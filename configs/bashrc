@@ -1,0 +1,88 @@
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+# User specific aliases and functions
+
+alias torhel6x='ssh root@lzhaldyb-rhel6x'
+alias torhel6i='ssh root@lzhaldyb-rhel6i'
+alias torhel5x='ssh root@lzhaldyb-rhel5x'
+alias torhel5i='ssh root@lzhaldyb-rhel5i'
+alias torhel7x='ssh root@rhel7x'
+alias toos='ssh root@lzhaldyb-openstack'
+alias ls='ls --color=auto'
+alias ll='ls -l'
+alias la='ls -la'
+alias lh='ls -lh'
+alias grep='grep --color=auto'
+alias music='ncmpcpp'
+
+
+export EDITOR="vim"
+export SVN_EDITOR="vim"
+export CVSROOT=:gserver:cvs.devel.redhat.com:/cvs/dist
+export HISTCONTROL=ignoredups
+export JAVA_HOME="/usr/java/latest"
+  
+# beaker flow aliases, use either of them (same functionality)
+alias bkr_flow='f_bkr_flow'
+alias beaker_flow='f_bkr_flow'
+
+function f_bkr_flow ()
+{ 
+  make tag
+  local ecode="$?"
+  local fn=
+  if [ "${ecode}" == "0" ]; then
+    git show &>/dev/null
+    if [ "$?" == "0" ]; then
+      # in git repository
+      git push --tags
+      ecode="$?"
+    fi
+    if [ "${ecode}" == "0" ]; then
+      make package
+      ecode="$?"
+      fn=$(/bin/ls -t *.rpm 2>/dev/null | head -1)
+  
+      if [ "${ecode}" == "0" -o -z "${fn}" ]; then
+        bkr task-add ${fn}
+        ecode="$?"
+  
+        if [ "${ecode}" == "0" ]; then
+          echo "--- [1-4] bkr_flow process passed (${fn} generated and sent out) ---"
+        else
+          echo "--- [4] test submission failed --- (ecode:${ecode}) [Issue 'bkr task-add ${fn}' again]"
+        fi
+      else
+        echo "--- [3] make package failed --- (ecode:${ecode}) [Issue 'make package && bkr task-add <last-generated-test-rpm>' again]"
+      fi
+    else
+      echo "--- [2]  git push --tags failed --- (ecode:${ecode}) [Issue 'git push --tags && make package && bkr task-add <last-generated-test-rpm>']"
+    fi
+  else
+    echo "--- [1] make tag failed --- (ecode:${ecode}) [Issue bkr_flow again]"
+  fi
+  
+}
+
+test -r ~/introcs/bin/config.sh && source ~/introcs/bin/config.sh
+
+# BASH helper function for Beaker to TCMS workflow.
+function create_runs_linux ()
+{
+  local plans="$*"
+  local os_arch=("5.8 i386" "5.8 x86_64" "6.3 i686" "6.3 x86_64")
+
+  for i_p in ${plans}; do
+    for ((i=0;i<${#os_arch[*]};i++)); do
+      echo "python2.7 ./tcms_tr.py --test-plan=${i_p} --test-run-build='MRG 2.1' --test-run-summary="%p on RHEL ${os_arch[${i}]}" -a"
+      python2.7 ./tcms_tr.py --test-plan=${i_p} --test-run-build='MRG 2.1' --test-run-summary="%p on RHEL ${os_arch[${i}]}" -a
+    done 
+  done
+}
+
+source ~/.bashrc_ps

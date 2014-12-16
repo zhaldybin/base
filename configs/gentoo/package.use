@@ -1,0 +1,21 @@
+x11-themes/gtk-engines-murrine -themes
+media-sound/deadbeef -cdda ape converter wavpack
+kde-base/okular djvu ebook
+media-video/mplayer2 -cdio -dvd -dvdnav -rar
+# required by net-print/cups
+app-text/ghostscript-gpl cups
+# end of net-print/cups
+net-im/pidgin gtk sasl
+app-misc/anki -recording -sound
+# required by app-misc/anki
+dev-lang/python:2.7 sqlite
+# end of app-misc/anki
+app-portage/layman mercurial subversion
+# required by amarok
+dev-db/mysql embedded
+virtual/mysql embedded
+# end of amarok
+media-sound/amarok -cdda lastfm
+# required by media-sound/picard
+media-libs/chromaprint tools
+# end of media-sound/picard
